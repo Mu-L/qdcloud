@@ -7,10 +7,19 @@ source /opt/tomcat8/webapps/ROOT/WEB-INF/cgi/head.sh
 # 用户名：username="jx00000010"
 # 密码：  password="123456"
 # 远程IP：untrusted_ip=10.64.1.136
- 
-# 尝试查询该用户名的ID
-sql="select user_id from lab_user where user_name=\"$username\" and password=\"$password\" and region=$regionid"
-user_id=$($mysqllogin "$sql" | grep -v user_id)
+
+
+# 正则表达式验证输入
+username_regex='^[a-zA-Z0-9_]+$'
+password_regex='^[a-zA-Z0-9_]+$'
+if [[ $username =~ $username_regex ]] && [[ $password =~ $password_regex ]]; then
+# 查询用户id
+    sql="select user_id from lab_user where user_name=\"$username\" and password=\"$password\" and region=$regionid"
+    user_id=$($mysqllogin "$sql" | grep -v user_id)
+else
+    echo "$time_stamp: UserorPass format is incorrect: username=\"$username\", password=\"$password\"." >> $log_file
+    exit 1
+fi
  
 # 没有用户直接退出
 if [ -z "$user_id" ]; then 
